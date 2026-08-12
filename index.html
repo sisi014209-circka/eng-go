@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko" translate="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<!-- 🚫 앱 화면과 같은 이유로 번역 제안을 끕니다 (nodes/english/ui/Index.html 참고) -->
+<meta name="google" content="notranslate">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#ffffff">
+<title>영어 지문 학습소</title>
+<style>
+  html, body { margin:0; padding:0; height:100%; overflow:hidden; background:#fff; }
+  iframe { position:fixed; inset:0; width:100%; height:100%; border:0; display:block; }
+  /* 앱이 뜨기 전 잠깐 보이는 화면 (뜨고 나면 iframe 이 덮습니다) */
+  .wait { position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+          font:16px/1.6 -apple-system, "Apple SD Gothic Neo", sans-serif; color:#8a8a8a; }
+</style>
+</head>
+<body translate="no">
+
+<!--
+  ┌─────────────────────────────────────────────────────────────┐
+  │ 이 파일이 하는 일: 앱스 스크립트 웹앱을 통째로 감싸기        │
+  └─────────────────────────────────────────────────────────────┘
+
+  앱스 스크립트 주소로 바로 들어가면 맨 위에 구글이 파란 배너
+  (“이 애플리케이션은 Google Apps Script 사용자가 만들었습니다”)를
+  강제로 붙입니다. 그 배너는 구글이 만든 바깥 틀에 있어서
+  우리 HTML 에서는 손이 닿지 않습니다.
+
+  그래서 우리 페이지를 하나 만들어 웹앱을 iframe 으로 띄웁니다.
+  이렇게 감싸면 배너가 붙지 않습니다.
+
+  ⚠️ 함께 지켜야 하는 것 두 가지
+   1) 웹앱 쪽 doGet 에 .setXFrameOptionsMode(ALLOWALL) 이 있어야 합니다.
+      (core/web/Core_Web.js — 이미 들어 있습니다)
+   2) 앱 안의 링크는 target="_top" 이 아니라 "_parent" 여야 합니다.
+      _top 이면 이 껍데기까지 통째로 날아가 배너가 다시 보입니다.
+-->
+
+<div class="wait">여는 중…</div>
+<iframe id="app" title="영어 지문 학습소"
+        allow="clipboard-write; fullscreen"
+        referrerpolicy="no-referrer"></iframe>
+
+<noscript>
+  <p style="font:16px sans-serif;padding:24px">
+    자바스크립트가 꺼져 있습니다.
+    <a href="https://script.google.com/macros/s/AKfycbx1yj34es_vLQ2LMLWShP_WYg1mQ6H_dcEufekZOl9GTPOXG_50U2xsiharyt7BpZAI8w/exec">여기를 눌러</a>
+    바로 들어가세요.
+  </p>
+</noscript>
+
+<script>
+  // 운영계 주소 (nodes/english/node.env 의 PROD_ID 와 같아야 합니다)
+  var EXEC = 'https://script.google.com/macros/s/AKfycbx1yj34es_vLQ2LMLWShP_WYg1mQ6H_dcEufekZOl9GTPOXG_50U2xsiharyt7BpZAI8w/exec';
+
+  // 이 껍데기 주소 뒤에 붙은 것(?page=teacher&k=… 등)을 그대로 넘겨 줍니다.
+  // 그래야 예전 주소 뒤에 붙이던 것들이 새 주소에서도 똑같이 통합니다.
+  document.getElementById('app').src = EXEC + window.location.search + window.location.hash;
+</script>
+
+</body>
+</html>
