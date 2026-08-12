@@ -57,10 +57,19 @@
   // 운영계 주소 (nodes/english/node.env 의 PROD_ID 와 같아야 합니다)
   var EXEC = 'https://script.google.com/macros/s/AKfycbx1yj34es_vLQ2LMLWShP_WYg1mQ6H_dcEufekZOl9GTPOXG_50U2xsiharyt7BpZAI8w/exec';
 
+  // 🪟 "이건 껍데기 안에서 여는 것" 이라고 앱에게 알려 주는 표시.
+  //    앱(Core_Embed)은 이 표시가 있을 때만 링크를 가로채 이쪽으로 넘깁니다.
+  //    ⚠️ 창이 몇 겹인지로 알아내게 두면 개발계 주소(/dev)에서 링크가 먹통이 됩니다.
+  function withEmbed(u) {
+    var hash = '', i = u.indexOf('#');
+    if (i >= 0) { hash = u.slice(i); u = u.slice(0, i); }
+    return u + (u.indexOf('?') >= 0 ? '&' : '?') + 'embed=1' + hash;
+  }
+
   // 이 껍데기 주소 뒤에 붙은 것(?page=teacher&k=… 등)을 그대로 넘겨 줍니다.
   // 그래야 예전 주소 뒤에 붙이던 것들이 새 주소에서도 똑같이 통합니다.
   var app = document.getElementById('app');
-  app.src = EXEC + window.location.search + window.location.hash;
+  app.src = withEmbed(EXEC + window.location.search + window.location.hash);
 
   // 앱 안에서 링크를 누르면 Core_Embed 가 여기로 알려 줍니다.
   // iframe 은 우리 것이라 우리가 바꿀 수 있습니다 (앱이 직접 바꾸는 건 브라우저가 막습니다).
@@ -72,9 +81,11 @@
     var url = ev.data && ev.data.engGo;
     if (typeof url !== 'string' || url.indexOf(EXEC) !== 0) return;   // 우리 앱 주소만
 
-    app.src = url;
+    app.src = withEmbed(url);
 
     // 껍데기 주소창도 맞춰 둡니다. 새로고침해도 같은 자리로 돌아옵니다.
+    // (여기엔 embed=1 을 안 붙입니다 — 사람이 보는 주소는 깔끔해야 하고,
+    //  새로고침하면 위에서 다시 붙습니다)
     var tail = url.slice(EXEC.length);
     try { history.replaceState(null, '', window.location.pathname + tail); } catch (e) {}
   });
