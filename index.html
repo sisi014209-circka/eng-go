@@ -7,6 +7,11 @@
 <meta name="google" content="notranslate">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#ffffff">
+<!-- ⚡ 앱을 부르기 전에 구글과 미리 손을 잡아 둡니다 (이름 찾기·암호 인사).
+     아래 script 가 iframe 주소를 정하기 전에 브라우저가 그 준비를 먼저 시작합니다.
+     ⚠️ 앱 내용이 실제로 오는 …-script.googleusercontent.com 은 주소가 그때그때
+        달라서 미리 잡아 둘 수 없습니다 — 여기 적어도 소용이 없습니다. -->
+<link rel="preconnect" href="https://script.google.com" crossorigin>
 <title>영어 지문 학습소</title>
 <style>
   html, body { margin:0; padding:0; height:100%; overflow:hidden; background:#fff; }
@@ -66,10 +71,42 @@
     return u + (u.indexOf('?') >= 0 ? '&' : '?') + 'embed=1' + hash;
   }
 
+  // 🚪 지난번에 들어간 문 기억하기 (2026-09-09)
+  //
+  //   앱스 스크립트는 한 번 여는 데 1초 넘게 걸립니다. 그런데 학생은 늘
+  //   첫 화면(문 고르기)을 한 번 열고 → 학생 문을 눌러 또 한 번 열었습니다.
+  //   같은 기기에서 지난번에 학생 문으로 들어갔다면, 다음부터는 그 화면을
+  //   곧바로 엽니다. 왕복이 한 번 줄어 그만큼 빨리 뜹니다.
+  //
+  //   ⚠️ 교무실은 기억하지 않습니다 — 기억하려면 열쇠(k)까지 이 기기에
+  //      적어 두어야 하는데, 교실 컴퓨터에 열쇠를 남기면 안 됩니다.
+  //      교무실 전용 주소에는 이미 ?page=teacher 가 붙어 있어 원래 한 번에 열립니다.
+  //   ⚠️ 첫 화면으로 나가면(「🏠 처음으로」) 기억을 지웁니다. 그래야 학생 화면에
+  //      갇히지 않고 다음번에 다시 문을 고를 수 있습니다.
+  var DOOR = 'engGoDoor';
+
+  function readDoor() {
+    try { return localStorage.getItem(DOOR) || ''; } catch (e) { return ''; }
+  }
+  function rememberDoor(tail) {
+    var m = /[?&]page=([A-Za-z]+)/.exec(String(tail || ''));
+    var page = m ? m[1] : '';
+    try {
+      if (page === 'student') localStorage.setItem(DOOR, 'student');
+      else localStorage.removeItem(DOOR);        // 첫 화면·교무실은 기억하지 않음
+    } catch (e) {}
+  }
+
   // 이 껍데기 주소 뒤에 붙은 것(?page=teacher&k=… 등)을 그대로 넘겨 줍니다.
   // 그래야 예전 주소 뒤에 붙이던 것들이 새 주소에서도 똑같이 통합니다.
   var app = document.getElementById('app');
-  app.src = withEmbed(EXEC + window.location.search + window.location.hash);
+  var search = window.location.search;
+  // 주소에 어느 문인지 안 적혀 있을 때만 기억한 문을 씁니다.
+  // (주소창은 그대로 둡니다 — 학생이 북마크한 주소는 껍데기 주소 그대로여야 합니다)
+  if (!/[?&]page=/.test(search) && readDoor() === 'student') {
+    search = (search ? search + '&' : '?') + 'page=student';
+  }
+  app.src = withEmbed(EXEC + search + window.location.hash);
 
   // 앱 안에서 링크를 누르면 Core_Embed 가 여기로 알려 줍니다.
   // iframe 은 우리 것이라 우리가 바꿀 수 있습니다 (앱이 직접 바꾸는 건 브라우저가 막습니다).
@@ -87,6 +124,7 @@
     // (여기엔 embed=1 을 안 붙입니다 — 사람이 보는 주소는 깔끔해야 하고,
     //  새로고침하면 위에서 다시 붙습니다)
     var tail = url.slice(EXEC.length);
+    rememberDoor(tail);
     try { history.replaceState(null, '', window.location.pathname + tail); } catch (e) {}
   });
 </script>
